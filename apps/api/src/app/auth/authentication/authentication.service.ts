@@ -13,6 +13,7 @@ import { LoginInputDto } from './dto/login-input.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { OtpCodeStatus } from '../otp-codes/enum/otp-code-status.enum';
+import { TokensService } from '../tokens/tokens.service';
 
 @Injectable()
 export class AuthenticationService {
@@ -22,7 +23,7 @@ export class AuthenticationService {
     @InjectRepository(OtpCode)
     private readonly otpRepository: Repository<OtpCode>,
     private readonly otpCodeService: OtpCodesService,
-    // private readonly tokensService: TokensService,
+    private readonly tokensService: TokensService,
   ) {}
 
   async signUp(
@@ -93,7 +94,9 @@ export class AuthenticationService {
     }
 
     // Generate an access and refresh token for the authenticated user
-    // ......token generation logic here
+    const { accessToken, refreshToken } =
+      await this.tokensService.generateTokens(user);
+
 
     //  const { password, ...userResponse } = user;
     const userRes = plainToInstance(UserResponseDto, user, {
@@ -101,8 +104,8 @@ export class AuthenticationService {
     });
 
     return {
-      accessToken:"",
-      refreshToken:"",
+      accessToken,
+      refreshToken,
       user: userRes,
     };
   }
