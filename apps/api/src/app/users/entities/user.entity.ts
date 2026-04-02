@@ -3,6 +3,7 @@ import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 import { UserGender } from '../enum/user-gender.enum';
 import { UserRole } from '../enum/user-role.enum';
 import { OtpCode } from 'src/app/auth/otp-codes/entities/otp-code.entity';
+import { RefreshToken } from 'src/app/auth/tokens/entities/refresh-token.entity';
 
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
@@ -39,7 +40,7 @@ export class User extends BaseEntity {
   @OneToMany(() => OtpCode, (otpCode) => otpCode.user)
   otpCodes: OtpCode[];
 
-//   @OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user)
-//   refreshTokens: RefreshToken[];
+  @OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user)
+  refreshTokens: RefreshToken[];
 
 }
