@@ -17,7 +17,9 @@ export class UsersService {
   ) {}
 
   async findOne(id: string): Promise<UserResponseDto> {
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user = await this.userRepository.findOne({ where: { id } 
+      // , relations: ['ownedProjects', 'projects']
+    });
     if (!user) {
       throw new NotFoundException("User not found");
     }
