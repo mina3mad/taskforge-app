@@ -37,6 +37,20 @@ export class ProjectsService {
     );
   }
 
+  async isUserMemberOfProject(
+    projectId: string,
+    userId: string,
+  ): Promise<boolean> {
+    const count = await this.projectRepository
+      .createQueryBuilder('project')
+      .innerJoin('project.members', 'member')
+      .where('project.id = :projectId', { projectId })
+      .andWhere('member.id = :userId', { userId })
+      .getCount();
+
+    return count > 0;
+  }
+
   async create(
     createProjectDto: CreateProjectDto,
     userId: string,
@@ -222,19 +236,5 @@ export class ProjectsService {
     return plainToInstance(ProjectResponseDto, saved, {
       excludeExtraneousValues: true,
     });
-  }
-
-  async isUserMemberOfProject(
-    projectId: string,
-    userId: string,
-  ): Promise<boolean> {
-    const count = await this.projectRepository
-      .createQueryBuilder('project')
-      .innerJoin('project.members', 'member')
-      .where('project.id = :projectId', { projectId })
-      .andWhere('member.id = :userId', { userId })
-      .getCount();
-
-    return count > 0;
   }
 }
