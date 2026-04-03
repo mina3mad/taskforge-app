@@ -8,6 +8,7 @@ import { CreateProjectDto } from './dto/create-project.dto';
 import { CurrentUser } from '../auth/authorization/decorator/current-user.decorator';
 import { Options } from 'src/shared/options.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { AddMemberDto } from './dto/add-member.dto';
 
 @Controller('projects')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -58,5 +59,35 @@ export class ProjectsController {
     @CurrentUser() user: { userId: string; userRole: UserRole },
   ) {
     return this.projectsService.remove(id, user.userId, user.userRole);
+  }
+
+  @Post(':id/members')
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
+  addMember(
+    @Param('id', ParseUUIDPipe) projectId: string,
+    @Body() addMemberDto: AddMemberDto,
+    @CurrentUser() user: { userId: string; userRole: UserRole },
+  ) {
+    return this.projectsService.addMember(
+      projectId,
+      addMemberDto.email,
+      user.userId,
+      user.userRole,
+    );
+  }
+ 
+  @Delete(':id/members/:userId')
+  @Roles(UserRole.ADMIN, UserRole.PROJECT_MANAGER)
+  removeMember(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('userId', ParseUUIDPipe) userId: string,
+    @CurrentUser() user: { userId: string; userRole: UserRole },
+  ) {
+    return this.projectsService.removeMember(
+      id,
+      userId,
+      user.userId,
+      user.userRole,
+    );
   }
 }

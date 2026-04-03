@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Project } from './entities/project.entity';
 import { User } from '../users/entities/user.entity';
@@ -136,10 +141,100 @@ export class ProjectsService {
     if (!project) {
       throw new NotFoundException('Project not found');
     }
-    
+
     this.canEditProject(project, userId, userRole);
 
     await this.projectRepository.softDelete(projectId);
     return { message: 'Project deleted successfully' };
+  }
+
+  async addMember(
+    projectId: string,
+    targetUserEmail: string,
+    requesterId: string,
+    requesterRole: UserRole,
+  ): Promise<ProjectResponseDto> {
+    const project = await this.projectRepository.findOne({
+      where: { id: projectId },
+      relations: ['owner', 'members'],
+    });
+
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+    this.canEditProject(project, requesterId, requesterRole);
+
+    const userToAdd = await this.userRepository.findOne({
+      where: { email: targetUserEmail },
+    });
+    if (!userToAdd) {
+      throw new NotFoundException('User with this email not found');
+    }
+
+    const alreadyMember = await this.isUserMemberOfProject(
+      projectId,
+      userToAdd.id,
+    );
+    if (alreadyMember) {
+      throw new BadRequestException('User is already a member of this project');
+    }
+
+    project.members.push(userToAdd);
+    await this.projectRepository.save(project);
+
+    return plainToInstance(ProjectResponseDto, project, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async removeMember(
+    projectId: string,
+    targetUserId: string,
+    requesterId: string,
+    requesterRole: UserRole,
+  ): Promise<ProjectResponseDto> {
+    const project = await this.projectRepository.findOne({
+      where: { id: projectId },
+      relations: ['owner', 'members'],
+    });
+
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
+    this.canEditProject(project, requesterId, requesterRole);
+ 
+    if (project.ownerId === targetUserId) {
+      throw new ForbiddenException('Cannot remove the project owner');
+    }
+
+    const alreadyMember = await this.isUserMemberOfProject(
+      projectId,
+      targetUserId,
+    );
+    if (!alreadyMember) {
+      throw new BadRequestException('User is not a member of this project');
+    }
+ 
+    project.members = project.members.filter((m) => m.id !== targetUserId);
+    const saved = await this.projectRepository.save(project);
+
+    return plainToInstance(ProjectResponseDto, saved, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async isUserMemberOfProject(
+    projectId: string,
+    userId: string,
+  ): Promise<boolean> {
+    const count = await this.projectRepository
+      .createQueryBuilder('project')
+      .innerJoin('project.members', 'member')
+      .where('project.id = :projectId', { projectId })
+      .andWhere('member.id = :userId', { userId })
+      .getCount();
+
+    return count > 0;
   }
 }
