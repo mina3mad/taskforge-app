@@ -1,15 +1,16 @@
 import { BaseEntity } from 'src/shared/base.entity';
-import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
+import { Column, Entity, ManyToMany, OneToMany, OneToOne } from 'typeorm';
 import { UserGender } from '../enum/user-gender.enum';
 import { UserRole } from '../enum/user-role.enum';
 import { OtpCode } from 'src/app/auth/otp-codes/entities/otp-code.entity';
 import { RefreshToken } from 'src/app/auth/tokens/entities/refresh-token.entity';
+import { Project } from 'src/app/projects/entities/project.entity';
 
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
   @Column({ unique: true, nullable: false })
   email: string;
-  
+
   @Column({ nullable: false })
   password: string;
 
@@ -33,7 +34,6 @@ export class User extends BaseEntity {
   })
   role: UserRole;
 
-
   @Column({ default: false })
   isVerified: boolean;
 
@@ -43,4 +43,9 @@ export class User extends BaseEntity {
   @OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user)
   refreshTokens: RefreshToken[];
 
+  @OneToMany(() => Project, (project) => project.owner)
+  ownedProjects: Project[];
+
+  @ManyToMany(() => Project, (project) => project.members)
+  projects: Project[];
 }

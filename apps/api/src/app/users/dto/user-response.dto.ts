@@ -1,6 +1,7 @@
 import { Exclude, Expose } from "class-transformer";
 import { UserGender } from "../enum/user-gender.enum";
 import { UserRole } from "../enum/user-role.enum";
+import { Project } from "src/app/projects/entities/project.entity";
 
 export class UserResponseDto {
   @Expose()
@@ -35,5 +36,11 @@ export class UserResponseDto {
 
   @Exclude()
   deletedAt: Date;
+
+  // @Expose()
+  // ownedProjects?: Project[];
+
+  // @Expose()
+  // projects?: Project[];
 
 }
