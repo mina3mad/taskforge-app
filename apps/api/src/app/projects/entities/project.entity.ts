@@ -9,22 +9,23 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm';
- 
+import { Task } from 'src/app/tasks/entities/task.entity';
+
 @Entity({ name: 'projects' })
 export class Project extends BaseEntity {
   @Column({ nullable: false })
   name: string;
- 
+
   @Column({ nullable: true, type: 'text' })
   description: string;
- 
+
   @ManyToOne(() => User, { eager: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'ownerId' })
   owner: User;
- 
+
   @Column({ nullable: false })
   ownerId: string;
- 
+
   @ManyToMany(() => User, { eager: true })
   @JoinTable({
     name: 'project_members',
@@ -32,5 +33,7 @@ export class Project extends BaseEntity {
     inverseJoinColumn: { name: 'userId', referencedColumnName: 'id' },
   })
   members: User[];
- 
+
+  @OneToMany(() => Task, (task) => task.project)
+  tasks: Task[];
 }
