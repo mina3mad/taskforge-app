@@ -122,7 +122,7 @@ export class CreateUsersTable1775141672953 implements MigrationInterface {
       const hashedPassword = hashSync(user.password, 10);
       await queryRunner.query(`
             INSERT INTO "users" (
-          "id", "email","firstName", "lastName", "gender", "password", "role", 
+          "id", "email","firstName", "lastName", "gender", "password", "role","isVerified" 
           "createdAt", "updatedAt"
         ) VALUES (
           '${user.id}', 
@@ -132,6 +132,7 @@ export class CreateUsersTable1775141672953 implements MigrationInterface {
           '${user.gender}', 
           '${hashedPassword}', 
           '${user.role}',
+          '${true}',
           NOW(), 
           NOW()
         )

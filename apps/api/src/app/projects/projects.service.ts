@@ -67,7 +67,13 @@ export class ProjectsService {
     });
 
     const saved = await this.projectRepository.save(project);
-    return plainToInstance(ProjectResponseDto, saved, {
+
+    const full = await this.projectRepository.findOne({
+      where: { id: saved.id },
+      relations: ['owner', 'members'],
+    });
+
+    return plainToInstance(ProjectResponseDto, full, {
       excludeExtraneousValues: true,
     });
   }
@@ -76,18 +82,19 @@ export class ProjectsService {
     userId: string,
     userRole: UserRole,
     options: Options,
-  ): Promise<ProjectResponseDto[]> {
+  ): Promise<{ data: ProjectResponseDto[], total: number }> {
     let projects: Project[];
+    let total: number;
 
     if (userRole === UserRole.ADMIN) {
-      projects = await this.projectRepository.find({
+      [projects, total] = await this.projectRepository.findAndCount({
         relations: ['owner', 'members'],
         skip: (options.page - 1) * options.limit,
         take: options.limit,
       });
     } else {
       // else Return only projects the user owns or is a member of
-      projects = await this.projectRepository.find({
+      [projects, total] = await this.projectRepository.findAndCount({
         relations: ['owner', 'members'],
         where: [
           { owner: { id: userId } }, // owner
@@ -98,11 +105,13 @@ export class ProjectsService {
       });
     }
 
-    return projects.map((p) =>
+    const data = projects.map((p) =>
       plainToInstance(ProjectResponseDto, p, {
         excludeExtraneousValues: true,
       }),
     );
+
+    return { data, total };
   }
 
   async findOne(projectId: string): Promise<ProjectResponseDto> {
@@ -217,7 +226,7 @@ export class ProjectsService {
     }
 
     this.canEditProject(project, requesterId, requesterRole);
- 
+
     if (project.ownerId === targetUserId) {
       throw new ForbiddenException('Cannot remove the project owner');
     }
@@ -229,7 +238,7 @@ export class ProjectsService {
     if (!alreadyMember) {
       throw new BadRequestException('User is not a member of this project');
     }
- 
+
     project.members = project.members.filter((m) => m.id !== targetUserId);
     const saved = await this.projectRepository.save(project);
 
