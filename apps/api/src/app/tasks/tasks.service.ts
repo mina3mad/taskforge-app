@@ -109,7 +109,12 @@ export class TasksService {
 
     const saved = await this.taskRepository.save(task);
 
-    return plainToInstance(TaskResponseDto, saved, {
+    const full = await this.taskRepository.findOne({
+      where: { id: saved.id },
+      relations: ['assignee', 'createdBy'],
+    });
+
+    return plainToInstance(TaskResponseDto, full, {
       excludeExtraneousValues: true,
     });
   }
@@ -136,7 +141,7 @@ export class TasksService {
     //     search,
     //   });
     qb.andWhere(
-    `(CAST(task.status AS TEXT) ILIKE :search OR CAST(assignee.email AS TEXT) ILIKE :search)`,
+    `(CAST(task.status AS TEXT) ILIKE :search OR CAST(assignee.email AS TEXT) ILIKE :search OR CAST(assignee.firstName AS TEXT) ILIKE :search OR CAST(assignee.lastName AS TEXT) ILIKE :search)`,
     { search: `%${search}%` },
   );
     }
