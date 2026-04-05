@@ -9,6 +9,8 @@ interface ProjectsState {
   currentProject: Project | null;
   tasks: Task[];
   taskTotal: number;
+  dashboardTasks: Task[];
+  isDashboardLoading: boolean;
   isLoading: boolean;
   isTasksLoading: boolean;
 
@@ -22,6 +24,7 @@ interface ProjectsState {
   removeMember: (projectId: string, userId: string) => Promise<void>;
 
   fetchTasks: (projectId: string, params?: { page?: number; limit?: number; search?: string }) => Promise<void>;
+  fetchDashboardTasks: () => Promise<void>;
   createTask: (projectId: string, data: { title: string; description?: string; assigneeId?: string }) => Promise<void>;
   updateTask: (projectId: string, taskId: string, data: { title?: string; description?: string }) => Promise<void>;
   updateTaskStatus: (projectId: string, taskId: string, status: string) => Promise<void>;
@@ -42,6 +45,8 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
   currentProject: null,
   tasks: [],
   taskTotal: 0,
+  dashboardTasks: [],
+  isDashboardLoading: false,
   isLoading: false,
   isTasksLoading: false,
 
@@ -155,6 +160,44 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       toast.error(e?.response?.data?.message || 'Failed to load tasks');
     } finally {
       set({ isTasksLoading: false });
+    }
+  },
+
+  fetchDashboardTasks: async () => {
+    const { projects } = get();
+    if (projects.length === 0) return;
+    set({ isDashboardLoading: true });
+    try {
+      // Fetch tasks from ALL projects in parallel with a high limit
+      const results = await Promise.allSettled(
+        projects.map((p) =>
+          tasksApi.findAll(p.id, { page: 1, limit: 1000 })
+        )
+      );
+      // Merge and deduplicate all tasks
+      const allTasks: Task[] = [];
+      const seen = new Set<string>();
+      for (const result of results) {
+        if (result.status !== 'fulfilled') continue;
+        const { data } = result.value;
+        let projectTasks: Task[];
+        if (Array.isArray(data)) {
+          projectTasks = data;
+        } else {
+          projectTasks = data.tasks ?? data.data ?? [];
+        }
+        for (const task of projectTasks) {
+          if (!seen.has(task.id)) {
+            seen.add(task.id);
+            allTasks.push(task);
+          }
+        }
+      }
+      set({ dashboardTasks: allTasks });
+    } catch (e: any) {
+      // Silently fail for dashboard — individual project errors are handled by allSettled
+    } finally {
+      set({ isDashboardLoading: false });
     }
   },
 
