@@ -26,7 +26,7 @@ const STATUS_ORDER: TaskStatus[] = [
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuthStore();
-  const { projects, tasks, fetchProjects, fetchTasks } = useProjectsStore();
+  const { projects, dashboardTasks, fetchProjects, fetchDashboardTasks } = useProjectsStore();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,20 +34,14 @@ export const DashboardPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (projects.length > 0 && user) {
-      const accessibleProjects = projects.filter(
-        (p) =>
-          user.role === "ADMIN" ||
-          p.owner?.id === user.id ||
-          p.members?.some((m) => m.id === user.id)
-      );
-      accessibleProjects.slice(0, 3).forEach((p) => fetchTasks(p.id));
+    if (projects.length > 0) {
+      fetchDashboardTasks();
     }
-  }, [projects.length, user]);
+  }, [projects.length]);
 
-  const myTasks = tasks.filter((t) => t.assignee?.id === user?.id);
-  const doneTasks = tasks.filter((t) => t.status === "DONE").length;
-  const inProgress = tasks.filter((t) => t.status === "IN_PROGRESS").length;
+  const myTasks = dashboardTasks.filter((t) => t.assignee?.id === user?.id);
+  const doneTasks = dashboardTasks.filter((t) => t.status === "DONE").length;
+  const inProgress = dashboardTasks.filter((t) => t.status === "IN_PROGRESS").length;
 
   const canCreateProject =
     user?.role === "ADMIN" || user?.role === "PROJECT_MANAGER";
