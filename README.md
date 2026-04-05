@@ -1,42 +1,42 @@
 # taskforge-app
-TaskForge is a project management application inspired by tools like Jira, designed to help teams organize their work, collaborate efficiently, and track progress across projects.
+TaskForge is a full-stack project management application inspired by tools like Jira, designed to help teams organize their work, collaborate efficiently, and track progress across projects.
 
 
 ## Tech Stack:
-Language: TypeScript (strict mode)
-Backend: NestJS
-Frontend: React
-Database: PostgreSQL
-ORM: TypeORM
-Containerization: Docker & Docker Compose
+- Language: TypeScript (strict mode)
+- Backend: NestJS
+- Frontend: React
+- Database: PostgreSQL
+- ORM: TypeORM
+- Containerization: Docker & Docker Compose
 
 ----------------------------------------------------------------------------------------------------
 ## Features
 ### 1-Authentication Service:
 
-User registration (email & password)
-Login with JWT access token & refresh token
-Secure token refresh flow
-Logout (refresh token invalidation)
-Role-Based Access Control (RBAC)
+- User registration (email & password)
+- Login with JWT access token & refresh token
+- Secure token refresh flow
+- Logout (refresh token invalidation)
+- Role-Based Access Control (RBAC)
 
 
 ### 2-Project Management:
 
-Create, update, delete projects
-Assign users to projects
-Project ownership support
-Role-based permissions enforcement
+- Create, update, delete projects
+- Assign users to projects
+- Project ownership support
+- Role-based permissions enforcement
 
 
 ### 3-Task Management:
 
-CRUD operations for tasks
-Assign tasks to users
-Task lifecycle:
-BACKLOG → TODO → IN_PROGRESS → IN_REVIEW → QA → DONE
+- CRUD operations for tasks
+- Assign tasks to users
+- Task lifecycle:
+- BACKLOG → TODO → IN_PROGRESS → IN_REVIEW → QA → DONE
                                    ↘ REOPENED → IN_PROGRESS
-Role-based task permissions
+= Role-based task permissions
 
 
 ### 4-Bonus Features Implemented:
@@ -50,8 +50,8 @@ https://documenter.getpostman.com/view/37303980/2sBXionVdN
 
 ## Test Credentials:
 Use the following admin account to test the system:
-Email: admin@example.com
-Password: Admin@123
+-Email: admin@example.com
+-Password: Admin@123
 
 ----------------------------------------------------------------------------------------------------
 ## Setup Guide
@@ -76,7 +76,7 @@ This will start:
 
 Backend API
 Frontend app
-PostgreSQL database (Migrations will run)
+PostgreSQL database (Migrations will be created)
 
 
 4. Access the Application
